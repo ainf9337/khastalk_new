@@ -33,40 +33,6 @@
                 Pendidikan Khas &nbsp;&middot;&nbsp; Autisme
             </div>
 
-            {{-- Test account hints --}}
-            <div style="margin-top:28px;text-align:left;background:rgba(255,255,255,0.08);
-                        border-radius:10px;padding:14px 16px;
-                        border:1px solid rgba(255,255,255,0.12)">
-                <p style="font-size:11px;color:rgba(255,255,255,0.5);
-                           margin-bottom:8px;letter-spacing:0.5px">
-                    <i class="fa-solid fa-circle-info"></i>
-                    &nbsp;TEST ACCOUNTS
-                </p>
-                @foreach([
-                    ['fa-shield-halved', 'Admin',         'admin@khastalk.com'],
-                    ['fa-chalkboard',    'Teacher',        'teacher@khastalk.com'],
-                    ['fa-users',         'Parent',         'parent@khastalk.com'],
-                    ['fa-user-check',    'Senior Asst.',   'senior@khastalk.com'],
-                ] as $hint)
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;
-                            cursor:pointer"
-                     onclick="document.getElementById('email').value='{{ $hint[2] }}'">
-                    <i class="fa-solid {{ $hint[0] }}"
-                       style="color:rgba(255,255,255,0.5);width:14px;font-size:12px"></i>
-                    <span style="font-size:11.5px;color:rgba(255,255,255,0.65)">
-                        {{ $hint[1] }}
-                    </span>
-                    <span style="font-size:11px;color:rgba(255,255,255,0.4)">
-                        {{ $hint[2] }}
-                    </span>
-                </div>
-                @endforeach
-                <p style="font-size:10.5px;color:rgba(255,255,255,0.35);margin-top:6px">
-                    Password for all:
-                    <strong style="color:rgba(255,255,255,0.5)">password</strong>
-                </p>
-            </div>
-
         </div>
     </div>
 
@@ -146,7 +112,7 @@
                                   gap:8px;cursor:pointer;font-size:12.5px;
                                   color:var(--khas-muted)">
                         <input type="checkbox" name="remember">
-                        Ingat saya
+                        Remember me
                     </label>
                     @if(Route::has('password.request'))
                     <a href="{{ route('password.request') }}"

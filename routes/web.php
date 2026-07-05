@@ -9,7 +9,6 @@ Route::get('/', fn() => redirect()->route('login'));
 // ── Auth (Breeze handles login/logout/register/profile) ──────
 require __DIR__.'/auth.php';
 
-// 🛡️ Bulletproof Safety Net: Gracefully handle GET logout links
 Route::get('/logout', function () {
     Auth::guard('web')->logout();
     request()->session()->invalidate();
@@ -19,13 +18,13 @@ Route::get('/logout', function () {
 
 // ── Redirect /dashboard to role-specific dashboard ───────────
 Route::middleware('auth')->get('/dashboard', function () {
-    $role = auth()->user()->role;
+    $role = str_replace('_', '-', auth()->user()->role);
 
     return match($role) {
         'teacher'          => redirect()->route('teacher.dashboard'),
         'parent'           => redirect()->route('parent.dashboard'),
         'admin'            => redirect()->route('admin.dashboard'),
-        'senior_assistant' => redirect()->route('senior.dashboard'),
+        'senior-assistant' => redirect()->route('senior.dashboard'),
         default            => redirect()->route('login'),
     };
 })->name('dashboard');
@@ -176,7 +175,7 @@ Route::middleware(['auth', 'role:admin'])
 });
 
 // ── Senior Assistant routes ───────────────────────────────────
-Route::middleware(['auth', 'role:senior_assistant'])
+Route::middleware(['auth', 'role:senior-assistant'])
      ->prefix('senior-assistant')
      ->name('senior.')
      ->group(function () {

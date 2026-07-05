@@ -14,6 +14,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/khas.css') }}">
 
+    <!-- 🎨 Modern CSS overrides to fix tiny logos and footer contrast -->
+    <style>
+        /* Force perfect proportions for the header logo */
+        .khas-nav-logo-img {
+            height: 42px !important;
+            width: auto !important;
+            display: block !important;
+        }
+
+        /* Force perfect proportions for the footer logo */
+        .khas-footer-logo-img {
+            height: 48px !important;
+            width: auto !important;
+            display: inline-block !important;
+        }
+
+        /* Modern High-Contrast Slate Footer */
+        .khas-footer {
+            background-color: #0f172a !important; /* Deep Slate Blue */
+            color: #94a3b8 !important;            /* Clean light grey text */
+            padding: 40px 20px !important;
+            text-align: center !important;
+            border-top: 1px solid #1e293b !important;
+            font-size: 13px !important;
+            line-height: 1.6 !important;
+        }
+
+        .khas-footer strong {
+            color: #f8fafc !important; /* Highlight key branding elements in off-white */
+        }
+
+        /* Vibrant high-contrast developer name */
+        .khas-dev-name {
+            color: #38bdf8 !important; /* Bright sky-blue to pop out legibly */
+            font-weight: 700 !important;
+        }
+    </style>
+
     @stack('styles')
 </head>
 <body>
@@ -123,7 +161,7 @@
     <strong>KHAS-Talk</strong> &mdash; Parent-Teacher Communication System for Autism
     <br>&copy; {{ date('Y') }} All rights reserved.
     <br><br>
-    Developed by <strong>Nur Ain Farhana Binti Ahmad Saifful</strong>
+    Developed by <span class="khas-dev-name">Nur Ain Farhana Binti Ahmad Saifful</span>
 </footer>
 
 @stack('scripts')
