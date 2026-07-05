@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Auth;
 
 // ── Public ───────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('login'));
@@ -8,9 +9,19 @@ Route::get('/', fn() => redirect()->route('login'));
 // ── Auth (Breeze handles login/logout/register/profile) ──────
 require __DIR__.'/auth.php';
 
+// 🛡️ Bulletproof Safety Net: Gracefully handle GET logout links
+Route::get('/logout', function () {
+    Auth::guard('web')->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/');
+})->name('logout.get');
+
 // ── Redirect /dashboard to role-specific dashboard ───────────
 Route::middleware('auth')->get('/dashboard', function () {
-    return match(auth()->user()->role) {
+    $role = auth()->user()->role;
+
+    return match($role) {
         'teacher'          => redirect()->route('teacher.dashboard'),
         'parent'           => redirect()->route('parent.dashboard'),
         'admin'            => redirect()->route('admin.dashboard'),

@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'KHAS-Talk')</title>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons & Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/khas.css') }}">
+
     @stack('styles')
 </head>
 <body>
@@ -19,7 +24,7 @@
             'teacher'          => 'teacher.dashboard',
             'parent'           => 'parent.dashboard',
             'admin'            => 'admin.dashboard',
-            'senior_assistant' => 'senior.dashboard',
+            'senior-assistant' => 'senior.dashboard',
             default            => 'dashboard',
         };
     @endphp
@@ -32,15 +37,16 @@
 
     <div class="khas-nav-spacer"></div>
 
-    @if(auth()->user()->isTeacher())
+    @if(auth()->user()->role === 'teacher')
     <a href="{{ route('teacher.emergency') }}" class="khas-emg-btn">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <span class="d-none-mobile">Emergency</span>
     </a>
     @endif
 
-    <div class="khas-profile-wrapper" x-data="{ open: false }">
-        <button class="khas-profile-btn" @click="open = !open">
+    <!-- Profile Dropdown Component (Refactored to robust Native JS) -->
+    <div class="khas-profile-wrapper">
+        <button class="khas-profile-btn" id="khasProfileBtn" type="button">
             <div class="khas-nav-avatar">
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
             </div>
@@ -50,21 +56,20 @@
             <i class="fa-solid fa-chevron-down khas-profile-chevron"></i>
         </button>
 
-        <div class="khas-dropdown" x-show="open" @click.outside="open = false"
-             x-transition:enter="transition ease-out duration-150"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
-             style="display:none">
+        <div class="khas-dropdown" id="khasDropdown" style="display: none;">
             <div class="khas-dropdown-header">
                 <p>{{ auth()->user()->name }}</p>
-                <p>{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</p>
+                <p>{{ ucfirst(str_replace('-', ' ', auth()->user()->role)) }}</p>
             </div>
+
             <a href="#">
                 <i class="fa-solid fa-user-pen"></i> My Profile
             </a>
+
+            <!-- Secure POST Logout Form -->
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="dd-logout-btn">
+                <button type="submit" class="dd-logout-btn" style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #ef4444;">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </button>
             </form>
@@ -78,19 +83,20 @@
 </div>
 @endif
 
+<!-- Flash Notifications (Refactored to native JS dismiss buttons) -->
 @if(session('success'))
-<div class="khas-flash khas-flash-success" x-data="{ show: true }" x-show="show">
+<div class="khas-flash khas-flash-success">
     <i class="fa-solid fa-circle-check"></i>
     {{ session('success') }}
-    <button @click="show = false"><i class="fa-solid fa-xmark"></i></button>
+    <button type="button" class="khas-flash-close-btn"><i class="fa-solid fa-xmark"></i></button>
 </div>
 @endif
 
 @if(session('error'))
-<div class="khas-flash khas-flash-danger" x-data="{ show: true }" x-show="show">
+<div class="khas-flash khas-flash-danger">
     <i class="fa-solid fa-circle-exclamation"></i>
     {{ session('error') }}
-    <button @click="show = false"><i class="fa-solid fa-xmark"></i></button>
+    <button type="button" class="khas-flash-close-btn"><i class="fa-solid fa-xmark"></i></button>
 </div>
 @endif
 
@@ -122,21 +128,60 @@
 
 @stack('scripts')
 <script>
-document.querySelectorAll('.pw-toggle').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const input = this.previousElementSibling;
-        const icon  = this.querySelector('i');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('fa-eye','fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.replace('fa-eye-slash','fa-eye');
-        }
+// --- Native Javascript Controller (Zero Conflicts) ---
+document.addEventListener('DOMContentLoaded', function () {
+    const profileBtn = document.getElementById('khasProfileBtn');
+    const dropdownMenu = document.getElementById('khasDropdown');
+
+    // Toggle Profile Dropdown
+    if (profileBtn && dropdownMenu) {
+        profileBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            const isOpen = dropdownMenu.style.display === 'block';
+            dropdownMenu.style.display = isOpen ? 'none' : 'block';
+            profileBtn.classList.toggle('active', !isOpen);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!profileBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.style.display = 'none';
+                profileBtn.classList.remove('active');
+            }
+        });
+    }
+
+    // Dismiss Flash Notifications
+    document.querySelectorAll('.khas-flash-close-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const flashCard = this.closest('.khas-flash');
+            if (flashCard) {
+                flashCard.style.transition = 'opacity 0.2s ease';
+                flashCard.style.opacity = '0';
+                setTimeout(() => flashCard.remove(), 200);
+            }
+        });
     });
+
+    // Toggle Input Passwords
+    document.querySelectorAll('.pw-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon  = this.querySelector('i');
+            if (input && input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye','fa-eye-slash');
+            } else if (input) {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash','fa-eye');
+            }
+        });
+    });
+
+    // Scroll chat thread to bottom
+    const thread = document.getElementById('msg-thread');
+    if (thread) thread.scrollTop = thread.scrollHeight;
 });
-const thread = document.getElementById('msg-thread');
-if (thread) thread.scrollTop = thread.scrollHeight;
 </script>
 </body>
 </html>
