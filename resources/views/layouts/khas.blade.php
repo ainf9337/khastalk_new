@@ -50,6 +50,17 @@
             color: #38bdf8 !important; /* Bright sky-blue to pop out legibly */
             font-weight: 700 !important;
         }
+
+        /* Keyframes for emergency banner animations */
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 
     @stack('styles')
@@ -100,7 +111,7 @@
                 <p>{{ ucfirst(str_replace('-', ' ', auth()->user()->role)) }}</p>
             </div>
 
-            <a href="#">
+            <a href="{{ route('profile.edit') }}">
                 <i class="fa-solid fa-user-pen"></i> My Profile
             </a>
 
@@ -219,6 +230,88 @@ document.addEventListener('DOMContentLoaded', function () {
     // Scroll chat thread to bottom
     const thread = document.getElementById('msg-thread');
     if (thread) thread.scrollTop = thread.scrollHeight;
+
+    // 🚨 --- Global Real-Time Emergency Polling System ---
+    function checkActiveEmergency() {
+        fetch('/ajax/emergency/check')
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_emergency) {
+                    showGlobalEmergencyAlert(data.alert, data.student_name);
+                } else {
+                    hideGlobalEmergencyAlert();
+                }
+            })
+            .catch(err => console.log('Emergency sync idle'));
+    }
+
+    function showGlobalEmergencyAlert(alert, studentName) {
+        let alertBox = document.getElementById('global-emergency-banner');
+        if (!alertBox) {
+            alertBox = document.createElement('div');
+            alertBox.id = 'global-emergency-banner';
+            alertBox.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: #ef4444;
+                color: white;
+                padding: 18px 24px;
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+                font-family: 'Poppins', sans-serif;
+                box-sizing: border-box;
+                animation: slideDown 0.4s ease;
+            `;
+            document.body.appendChild(alertBox);
+        }
+
+        alertBox.innerHTML = `
+            <div style="display:flex; align-items:center; gap:16px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:24px; animation: pulse 1s infinite; color: #fff;"></i>
+                <div>
+                    <strong style="font-size:16px; letter-spacing: 0.5px;">AMARAN KECEMASAN: ${studentName}</strong>
+                    <p style="margin:4px 0 0 0; font-size:13.5px; opacity:0.95;">${alert.message}</p>
+                </div>
+            </div>
+            <div>
+                <button onclick="acknowledgeEmergency(${alert.id})" style="background: white; color: #ef4444; border: none; padding: 10px 20px; font-weight: 700; border-radius: 6px; cursor: pointer; font-size:13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.1s;">
+                    SAHKAN TERIMA BANCIAN
+                </button>
+            </div>
+        `;
+    }
+
+    function hideGlobalEmergencyAlert() {
+        const alertBox = document.getElementById('global-emergency-banner');
+        if (alertBox) alertBox.remove();
+    }
+
+    // Globally declare acknowledge action without library reliance
+    window.acknowledgeEmergency = function(alertId) {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch(`/ajax/emergency/${alertId}/acknowledge`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                hideGlobalEmergencyAlert();
+            }
+        });
+    }
+
+    // Poll the server for active emergencies every 2.5 seconds
+    setInterval(checkActiveEmergency, 2500);
+    checkActiveEmergency(); // Check immediately on layout load
 });
 </script>
 </body>

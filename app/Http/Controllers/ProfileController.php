@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -16,50 +17,60 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        $phoneColumn = Schema::hasColumn('users', 'phone_number') ? 'phone_number' : 'phone';
+        $userPhone = $user->$phoneColumn ?? '';
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'phoneColumn' => $phoneColumn,
+            'userPhone' => $userPhone,
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-    $request->user()->fill([
-        'name'  => $request->name,
-        'email' => $request->email,
-        'phone' => $request->phone,
-    ]);
+        $user = $request->user();
+        $phoneColumn = Schema::hasColumn('users', 'phone_number') ? 'phone_number' : 'phone';
 
-    if ($request->user()->isDirty('email')) {
-        $request->user()->email_verified_at = null;
-    }
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
 
-    $request->user()->save();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        if ($phoneColumn) {
+            $user->$phoneColumn = $request->phone;
+        }
 
-    return Redirect::route('profile.edit')
-        ->with('status', 'profile-updated');
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return redirect()->route('profile.edit')->with('success', 'Profil berjaya dikemas kini!');
     }
 
     /**
-     * Delete the user's account.
+     * Securely update the user's password.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function updatePassword(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user = $request->user();
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
 
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return redirect()->route('profile.edit')->with('success', 'Kata laluan berjaya dikemas kini!');
     }
 }

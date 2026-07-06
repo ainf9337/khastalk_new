@@ -55,19 +55,6 @@
                 @endforeach
             </select>
 
-            {{-- Diagnosis info --}}
-            <div style="background:var(--khas-bg);border:1px solid var(--khas-border);
-                        border-radius:8px;padding:10px 12px;margin-bottom:14px;
-                        display:flex;align-items:center;gap:8px">
-                <i class="fa-solid fa-circle-info"
-                   style="color:var(--khas-blue);font-size:13px"></i>
-                <span style="font-size:12.5px;color:var(--khas-muted)">
-                    Diagnosis is set to
-                    <strong style="color:var(--khas-text)">Autism</strong>
-                    for all KHAS-Talk students
-                </span>
-            </div>
-
             <label class="khas-label">Date of birth</label>
             <input type="date" name="date_of_birth" class="khas-input"
                    value="{{ old('date_of_birth') }}">

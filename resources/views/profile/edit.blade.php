@@ -1,240 +1,231 @@
 @extends('layouts.khas')
-@section('title', 'My Profile')
+
+@section('title', 'Kemas Kini Profil - KHAS-Talk')
 
 @section('content')
-<div class="khas-page" style="max-width:680px;margin:0 auto">
+<style>
+    :root {
+        --khas-blue: #1e468a;
+        --khas-blue-dark: #1e3a8a;
+        --khas-border: #e5e7eb;
+        --khas-muted: #6b7280;
+        --khas-text: #1f2937;
+        --khas-bg: #f9fafb;
+    }
 
-    {{-- Back link --}}
-    @php
-        $dashRoute = match(auth()->user()->role) {
-            'teacher'          => 'teacher.dashboard',
-            'parent'           => 'parent.dashboard',
-            'admin'            => 'admin.dashboard',
-            'senior_assistant' => 'senior.dashboard',
-            default            => 'dashboard',
-        };
-    @endphp
-    <a href="{{ route($dashRoute) }}"
-       style="font-size:12.5px;color:var(--khas-muted);text-decoration:none;
-              display:inline-flex;align-items:center;gap:6px;margin-bottom:16px">
-        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-    </a>
+    .profile-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-    {{-- Profile header card --}}
-    <div class="khas-card"
-         style="display:flex;align-items:center;gap:20px;
-                flex-wrap:wrap;margin-bottom:16px">
-        <div style="width:72px;height:72px;border-radius:50%;
-                    background:var(--khas-blue);display:flex;align-items:center;
-                    justify-content:center;font-size:28px;font-weight:700;
-                    color:#fff;flex-shrink:0">
-            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-        </div>
-        <div>
-            <h5 style="font-weight:700;font-size:18px;margin-bottom:4px">
-                {{ auth()->user()->name }}
-            </h5>
-            <span style="background:var(--khas-blue-light);color:var(--khas-blue);
-                         font-size:12px;font-weight:600;padding:3px 12px;border-radius:10px">
-                <i class="fa-solid fa-id-badge"></i>
-                &nbsp;{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}
-            </span>
-            <p style="font-size:12.5px;color:var(--khas-muted);margin-top:8px">
-                <i class="fa-solid fa-envelope" style="font-size:11px"></i>
-                &nbsp;{{ auth()->user()->email }}
-                &nbsp;&nbsp;
-                <i class="fa-solid fa-phone" style="font-size:11px"></i>
-                &nbsp;{{ auth()->user()->phone ?? 'Not set' }}
-            </p>
-        </div>
+    .profile-header-block {
+        margin-bottom: 28px;
+    }
+
+    .profile-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--khas-text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .profile-subtitle {
+        font-size: 13.5px;
+        color: var(--khas-muted);
+        margin-top: 4px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .profile-card {
+        background: #fff;
+        border: 1px solid var(--khas-border);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+
+    .profile-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--khas-border);
+        background: var(--khas-bg);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .profile-card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--khas-text);
+        margin: 0;
+    }
+
+    .profile-card-body {
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--khas-text);
+        margin-bottom: 6px;
+    }
+
+    .form-control-wrap {
+        position: relative;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        border: 1.5px solid var(--khas-border);
+        border-radius: 6px;
+        color: var(--khas-text);
+        background: #fff;
+        transition: border-color 0.15s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--khas-blue);
+    }
+
+    .form-control-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--khas-muted);
+        cursor: pointer;
+    }
+
+    .form-btn-submit {
+        background: var(--khas-blue);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-btn-submit:hover {
+        background: var(--khas-blue-dark);
+    }
+</style>
+
+<div class="profile-container">
+
+    <div class="profile-header-block">
+        <h2 class="profile-title">
+            <i class="fa-solid fa-user-gear" style="color: var(--khas-blue);"></i> My Profile
+        </h2>
+        <p class="profile-subtitle">Update your personal information and change your system account password.</p>
     </div>
 
-    {{-- Edit profile info --}}
-    <div class="khas-card" style="margin-bottom:14px">
-        <p style="font-size:13.5px;font-weight:600;margin-bottom:16px">
-            <i class="fa-solid fa-user-pen" style="color:var(--khas-blue)"></i>
-            &nbsp;Edit Profile Information
-        </p>
-
-        <form method="POST" action="{{ route('profile.update') }}">
-            @csrf
-            @method('PATCH')
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <div>
-                    <label class="khas-label" for="name">Full Name *</label>
-                    <input type="text"
-                           id="name"
-                           name="name"
-                           class="khas-input"
-                           value="{{ old('name', auth()->user()->name) }}"
-                           required>
-                </div>
-                <div>
-                    <label class="khas-label" for="phone">Phone Number</label>
-                    <input type="text"
-                           id="phone"
-                           name="phone"
-                           class="khas-input"
-                           placeholder="01X-XXXXXXXX"
-                           value="{{ old('phone', auth()->user()->phone) }}">
-                </div>
+    <div class="profile-grid">
+        <!-- Card 1: Account Information -->
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <i class="fa-regular fa-address-card" style="color: var(--khas-blue);"></i>
+                <h3 class="profile-card-title">Maklumat Peribadi</h3>
             </div>
+            <div class="profile-card-body">
+                <form method="POST" action="{{ route('profile.update') }}">
+                    @csrf
+                    @method('PATCH')
 
-            <label class="khas-label" for="email">Email Address *</label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   class="khas-input"
-                   value="{{ old('email', auth()->user()->email) }}"
-                   required>
+                    <div class="form-group">
+                        <label class="form-label" for="name">Nama Penuh</label>
+                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $user->name) }}" required autocomplete="name">
+                    </div>
 
-            @if(session('status') === 'profile-updated')
-            <div class="khas-alert khas-alert-success" style="margin-bottom:12px">
-                <i class="fa-solid fa-circle-check"></i>
-                Profile updated successfully.
-            </div>
-            @endif
+                    <div class="form-group">
+                        <label class="form-label" for="email">Alamat Emel</label>
+                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $user->email) }}" required autocomplete="username">
+                    </div>
 
-            <button type="submit"
-                    style="background:var(--khas-blue);color:#fff;border:none;
-                           border-radius:8px;padding:10px 24px;font-size:13px;
-                           font-weight:600;cursor:pointer;font-family:Poppins,sans-serif;
-                           display:inline-flex;align-items:center;gap:8px;
-                           transition:all 0.18s"
-                    onmouseover="this.style.background='var(--khas-blue-dark)'"
-                    onmouseout="this.style.background='var(--khas-blue)'">
-                <i class="fa-solid fa-floppy-disk"></i> Save Changes
-            </button>
-        </form>
-    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="phone">No. Telefon</label>
+                        <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $userPhone) }}" placeholder="e.g. 0123456789">
+                    </div>
 
-    {{-- Change password --}}
-    <div class="khas-card" style="margin-bottom:14px">
-        <p style="font-size:13.5px;font-weight:600;margin-bottom:16px">
-            <i class="fa-solid fa-lock" style="color:var(--khas-amber)"></i>
-            &nbsp;Change Password
-        </p>
-
-        <form method="POST" action="{{ route('password.update') }}">
-            @csrf
-            @method('PUT')
-
-            <label class="khas-label" for="current_password">Current Password</label>
-            <div class="pw-wrapper">
-                <input type="password"
-                       id="current_password"
-                       name="current_password"
-                       class="khas-input"
-                       placeholder="Enter current password"
-                       autocomplete="current-password">
-                <button type="button" class="pw-toggle">
-                    <i class="fa-solid fa-eye"></i>
-                </button>
-            </div>
-            @error('current_password')
-            <p style="font-size:12px;color:var(--khas-red);margin:-8px 0 10px">
-                {{ $message }}
-            </p>
-            @enderror
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <div>
-                    <label class="khas-label" for="password">New Password</label>
-                    <div class="pw-wrapper">
-                        <input type="password"
-                               id="password"
-                               name="password"
-                               class="khas-input"
-                               placeholder="Min. 8 characters"
-                               autocomplete="new-password">
-                        <button type="button" class="pw-toggle">
-                            <i class="fa-solid fa-eye"></i>
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="form-btn-submit">
+                            <i class="fa-regular fa-floppy-disk"></i> Simpan Maklumat
                         </button>
                     </div>
-                    @error('password')
-                    <p style="font-size:12px;color:var(--khas-red);margin:-8px 0 10px">
-                        {{ $message }}
-                    </p>
-                    @enderror
-                </div>
-                <div>
-                    <label class="khas-label" for="password_confirmation">
-                        Confirm New Password
-                    </label>
-                    <div class="pw-wrapper">
-                        <input type="password"
-                               id="password_confirmation"
-                               name="password_confirmation"
-                               class="khas-input"
-                               placeholder="Repeat new password"
-                               autocomplete="new-password">
-                        <button type="button" class="pw-toggle">
-                            <i class="fa-solid fa-eye"></i>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card 2: Update Password -->
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <i class="fa-solid fa-key" style="color: var(--khas-blue);"></i>
+                <h3 class="profile-card-title">Kemas Kini Kata Laluan</h3>
+            </div>
+            <div class="profile-card-body">
+                <form method="POST" action="{{ route('profile.password.update') }}">
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="form-group">
+                        <label class="form-label" for="update_password_current_password">Kata Laluan Semasa</label>
+                        <div class="form-control-wrap">
+                            <input type="password" name="current_password" id="update_password_current_password" class="form-control" required autocomplete="current-password">
+                            <span class="form-control-icon pw-toggle"><i class="fa-regular fa-eye"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="update_password_password">Kata Laluan Baharu</label>
+                        <div class="form-control-wrap">
+                            <input type="password" name="password" id="update_password_password" class="form-control" required autocomplete="new-password">
+                            <span class="form-control-icon pw-toggle"><i class="fa-regular fa-eye"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="update_password_password_confirmation">Sahkan Kata Laluan Baharu</label>
+                        <div class="form-control-wrap">
+                            <input type="password" name="password_confirmation" id="update_password_password_confirmation" class="form-control" required autocomplete="new-password">
+                            <span class="form-control-icon pw-toggle"><i class="fa-regular fa-eye"></i></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="form-btn-submit">
+                            <i class="fa-solid fa-shield-halved"></i> Tukar Kata Laluan
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
-
-            @if(session('status') === 'password-updated')
-            <div class="khas-alert khas-alert-success" style="margin-bottom:12px">
-                <i class="fa-solid fa-circle-check"></i>
-                Password changed successfully.
-            </div>
-            @endif
-
-            <button type="submit"
-                    style="background:var(--khas-amber);color:#fff;border:none;
-                           border-radius:8px;padding:10px 24px;font-size:13px;
-                           font-weight:600;cursor:pointer;font-family:Poppins,sans-serif;
-                           display:inline-flex;align-items:center;gap:8px;
-                           transition:all 0.18s"
-                    onmouseover="this.style.background='#c47d10'"
-                    onmouseout="this.style.background='var(--khas-amber)'">
-                <i class="fa-solid fa-key"></i> Update Password
-            </button>
-        </form>
-    </div>
-
-    {{-- Delete account (optional — keep collapsed) --}}
-    <details style="margin-bottom:16px">
-        <summary style="font-size:12.5px;color:var(--khas-red);cursor:pointer;
-                         font-weight:600;list-style:none;display:flex;
-                         align-items:center;gap:6px">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            Delete Account
-        </summary>
-        <div class="khas-card"
-             style="margin-top:10px;border:1.5px solid var(--khas-red)">
-            <p style="font-size:13px;color:var(--khas-muted);margin-bottom:14px">
-                Once deleted, all your data will be permanently removed.
-                This action cannot be undone.
-            </p>
-            <form method="POST" action="{{ route('profile.destroy') }}"
-                  onsubmit="return confirm('Are you absolutely sure? This cannot be undone.')">
-                @csrf
-                @method('DELETE')
-                <label class="khas-label">
-                    Confirm your password to proceed
-                </label>
-                <div class="pw-wrapper">
-                    <input type="password"
-                           name="password"
-                           class="khas-input"
-                           placeholder="Enter your password">
-                    <button type="button" class="pw-toggle">
-                        <i class="fa-solid fa-eye"></i>
-                    </button>
-                </div>
-                <button type="submit"
-                        class="khas-btn"
-                        style="background:var(--khas-red);color:#fff;
-                               border:none;width:auto">
-                    <i class="fa-solid fa-trash"></i> Delete My Account
-                </button>
-            </form>
         </div>
-    </details>
+    </div>
 
 </div>
 @endsection

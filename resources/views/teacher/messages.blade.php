@@ -98,7 +98,6 @@
             </span>
         </div>
 
-        {{-- Messages thread --}}
         <div class="msg-thread" id="msg-thread">
             @forelse($thread as $msg)
             @php
@@ -107,7 +106,7 @@
                 $today    = now()->toDateString();
                 $yesterday= now()->subDay()->toDateString();
                 $label    = match(true) {
-                    $msgDate === $today     => 'Today',
+                    $msgDate === $today      => 'Today',
                     $msgDate === $yesterday => 'Yesterday',
                     default                 => $msg->created_at->format('d F Y'),
                 };
@@ -120,12 +119,12 @@
             @endif
 
             @php
-                $isSystem = Str::startsWith($msg->content, ['📋', '🚨']);
+                $isSystem = Str::startsWith($msg->content ?? $msg->message ?? '', ['📋', '🚨']);
             @endphp
 
             <div class="{{ $isSystem ? 'me-row' : ($isMe ? 'me-row' : 'them-row') }}">
                 <div class="bubble {{ $isSystem ? 'system' : ($isMe ? 'me' : 'them') }}">
-                    {{ $msg->content }}
+                    {{ $msg->content ?? $msg->message ?? '' }}
                 </div>
                 <div class="msg-ts">
                     {{ $msg->created_at->format('g:i a') }}
@@ -149,7 +148,6 @@
             @endforelse
         </div>
 
-        {{-- Input area --}}
         <div class="msg-input-area">
             <div class="tpl-chips">
                 <span style="font-size:10.5px;color:#888;flex-shrink:0">Quick:</span>
@@ -167,9 +165,9 @@
                 </button>
             </div>
             <form method="POST" action="{{ route('teacher.messages.store') }}"
-                  class="msg-input-row">
+                  class="msg-input-row" id="realtime-chat-form">
                 @csrf
-                <input type="hidden" name="receiver_id" value="{{ $withParent }}">
+                <input type="hidden" name="receiver_id" id="chat-receiver-id" value="{{ $withParent }}">
                 <input type="hidden" name="student_id"  value="{{ $withStudent }}">
                 <input type="text"
                        name="content"
@@ -198,3 +196,148 @@
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const partnerId = "{{ $withParent ?? '' }}";
+    const studentId = "{{ $withStudent ?? '' }}";
+    const msgThread = document.getElementById('msg-thread');
+    const chatForm = document.getElementById('realtime-chat-form');
+    const msgInput = document.getElementById('msgInput');
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    if (!partnerId || !msgThread) return;
+
+    // Scroll directly to the bottom of the conversation on initial boot
+    msgThread.scrollTop = msgThread.scrollHeight;
+
+    // Track previously fetched messages count to prevent redrawing unchanged HTML logs
+    let lastKnownMessageCount = 0;
+
+    function fetchLiveMessages() {
+        fetch(`/ajax/messages/fetch/${partnerId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Only re-render if database registers new message entries
+                    if (data.messages.length !== lastKnownMessageCount) {
+                        renderLiveMessages(data.messages, data.current_user_id);
+                        lastKnownMessageCount = data.messages.length;
+                    }
+                }
+            })
+            .catch(err => console.log('Syncing status: idle'));
+    }
+
+    function renderLiveMessages(messages, currentUserId) {
+        let chatHtml = '';
+        let lastDateString = '';
+
+        messages.forEach(msg => {
+            const rawMsgText = msg.content || msg.message || '';
+            const msgDateObj = new Date(msg.created_at);
+            const dateString = msgDateObj.toDateString();
+
+            // Render Date Group dividers dynamically
+            if (dateString !== lastDateString) {
+                const label = getFriendlyDateLabel(msgDateObj);
+                chatHtml += `
+                    <div class="msg-date-div">
+                        <span class="msg-date-label">${label}</span>
+                    </div>
+                `;
+                lastDateString = dateString;
+            }
+
+            const isMe = msg.sender_id == currentUserId;
+            const isSystem = rawMsgText.startsWith('📋') || rawMsgText.startsWith('🚨');
+
+            const rowClass = isSystem ? 'me-row' : (isMe ? 'me-row' : 'them-row');
+            const bubbleClass = isSystem ? 'system' : (isMe ? 'me' : 'them');
+            const formattedTime = msgDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            let checkmarkHtml = '';
+            if (isMe) {
+                if (msg.is_read) {
+                    checkmarkHtml = `<i class="fa-solid fa-check-double" style="font-size:10px;color:var(--khas-blue);margin-left:4px;"></i>`;
+                } else {
+                    checkmarkHtml = `<i class="fa-solid fa-check" style="font-size:10px;color:#999;margin-left:4px;"></i>`;
+                }
+            }
+
+            chatHtml += `
+                <div class="${rowClass}">
+                    <div class="bubble ${bubbleClass}">
+                        ${escapeHtml(rawMsgText)}
+                    </div>
+                    <div class="msg-ts">
+                        ${formattedTime}
+                        ${checkmarkHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        // Smart Scrolling: Only auto-snap scroll if user is already looking at bottom entries
+        const isUserAtBottom = msgThread.scrollTop + msgThread.clientHeight >= msgThread.scrollHeight - 150;
+        msgThread.innerHTML = chatHtml;
+
+        if (isUserAtBottom || lastKnownMessageCount === 0) {
+            msgThread.scrollTop = msgThread.scrollHeight;
+        }
+    }
+
+    if (chatForm) {
+        chatForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = msgInput.value.trim();
+            if (!text) return;
+
+            // Clear input box immediately to preserve professional fast response feel
+            msgInput.value = '';
+
+            fetch('/ajax/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
+                body: JSON.stringify({
+                    receiver_id: partnerId,
+                    student_id: studentId,
+                    message: text
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchLiveMessages(); // Refresh UI instantly upon successful transmission
+                }
+            });
+        });
+    }
+
+    function getFriendlyDateLabel(dateObj) {
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        if (dateObj.toDateString() === today.toDateString()) {
+            return 'Today';
+        } else if (dateObj.toDateString() === yesterday.toDateString()) {
+            return 'Yesterday';
+        } else {
+            return dateObj.toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+    }
+
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Set polling clock loop to 1.5 seconds (Fast and highly interactive)
+    setInterval(fetchLiveMessages, 1500);
+});
+</script>
+@endpush

@@ -1,6 +1,8 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AjaxRealTimeController;
 use Illuminate\Support\Facades\Auth;
 
 // ── Public ───────────────────────────────────────────────────
@@ -28,6 +30,13 @@ Route::middleware('auth')->get('/dashboard', function () {
         default            => redirect()->route('login'),
     };
 })->name('dashboard');
+
+Route::middleware('auth')->prefix('ajax')->group(function () {
+    Route::get('/messages/fetch/{partnerId}', [AjaxRealTimeController::class, 'fetchMessages'])->name('ajax.messages.fetch');
+    Route::post('/messages/send', [AjaxRealTimeController::class, 'sendMessage'])->name('ajax.messages.send');
+    Route::get('/emergency/check', [AjaxRealTimeController::class, 'checkEmergency'])->name('ajax.emergency.check');
+    Route::post('/emergency/{alert}/acknowledge', [AjaxRealTimeController::class, 'acknowledgeEmergency'])->name('ajax.emergency.acknowledge');
+});
 
 // ── Teacher routes ────────────────────────────────────────────
 Route::middleware(['auth', 'role:teacher'])
@@ -199,4 +208,11 @@ Route::middleware(['auth', 'role:senior-assistant'])
     Route::patch('/rpi-approval/{rpi}',
         [\App\Http\Controllers\Senior\RpiApprovalController::class, 'update'])
         ->name('rpi-approval.update');
+});
+
+// ── Profile Management Routes ─────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
