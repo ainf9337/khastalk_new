@@ -102,6 +102,10 @@ Route::middleware(['auth', 'role:teacher'])
     Route::get('/reports',
         [\App\Http\Controllers\Teacher\ReportController::class, 'index'])
         ->name('reports');
+
+    Route::get('/reports/export',
+        [\App\Http\Controllers\Teacher\ReportController::class, 'export'])
+        ->name('reports.export');
 });
 
 // ── Parent routes ─────────────────────────────────────────────
