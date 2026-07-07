@@ -34,9 +34,13 @@
          style="display:flex;justify-content:space-between;
                 align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
         <div>
-            <p style="font-size:14px;font-weight:600;margin:0 0 3px">
+            <a href="{{ route('admin.classes.show', $class) }}"
+            style="font-size:14px;font-weight:600;margin:0 0 3px;
+                    color:var(--khas-blue);text-decoration:none;display:block">
                 {{ $class->class_name }}
-            </p>
+                <i class="fa-solid fa-arrow-right"
+                style="font-size:11px;margin-left:4px"></i>
+            </a>
             <p style="font-size:12px;color:var(--khas-muted);margin:0">
                 Teacher: {{ $class->teacher?->name ?? 'Unassigned' }}
                 &nbsp;&middot;&nbsp; {{ $class->students->count() }} students

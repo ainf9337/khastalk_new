@@ -27,7 +27,7 @@ class UserController extends Controller
             'name'     => 'required|string|max:100',
             'email'    => 'required|email|unique:users,email',
             'role'     => 'required|in:teacher,parent,senior_assistant',
-            'phone'    => 'nullable|string|max:20',
+            'phone_number'    => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
         ]);
 
@@ -35,7 +35,7 @@ class UserController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'role'     => $request->role,
-            'phone'    => $request->phone,
+            'phone_number'    => $request->phone,
             'password' => Hash::make($request->password),
         ]);
 
@@ -66,14 +66,14 @@ class UserController extends Controller
             'name'  => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role'  => 'required|in:teacher,parent,senior_assistant,admin',
-            'phone' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string|max:20',
         ]);
 
         $user->update([
             'name'  => $request->name,
             'email' => $request->email,
             'role'  => $request->role,
-            'phone' => $request->phone,
+            'phone_number' => $request->phone,
         ]);
 
         ActivityLog::record(

@@ -14,26 +14,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/khas.css') }}">
 
-    <!-- 🎨 Modern CSS overrides to fix tiny logos and footer contrast -->
     <style>
-        /* Force perfect proportions for the header logo */
         .khas-nav-logo-img {
-            height: 42px !important;
+            height: 200px !important;
             width: auto !important;
             display: block !important;
         }
-
-        /* Force perfect proportions for the footer logo */
         .khas-footer-logo-img {
-            height: 48px !important;
+            height: 200px !important;
             width: auto !important;
-            display: inline-block !important;
         }
 
-        /* Modern High-Contrast Slate Footer */
         .khas-footer {
-            background-color: #0f172a !important; /* Deep Slate Blue */
-            color: #94a3b8 !important;            /* Clean light grey text */
+            background-color: #0f172a !important;
+            color: #94a3b8 !important;
             padding: 40px 20px !important;
             text-align: center !important;
             border-top: 1px solid #1e293b !important;
@@ -42,16 +36,14 @@
         }
 
         .khas-footer strong {
-            color: #f8fafc !important; /* Highlight key branding elements in off-white */
+            color: #f8fafc !important;
         }
 
-        /* Vibrant high-contrast developer name */
         .khas-dev-name {
-            color: #38bdf8 !important; /* Bright sky-blue to pop out legibly */
+            color: #38bdf8 !important;
             font-weight: 700 !important;
         }
 
-        /* Keyframes for emergency banner animations */
         @keyframes slideDown {
             from { transform: translateY(-100%); }
             to { transform: translateY(0); }
@@ -81,8 +73,6 @@
     <a href="{{ route($dashRoute) }}" class="khas-nav-logo-wrap">
         <img src="{{ asset('img/logo.png') }}" alt="KHAS-Talk" class="khas-nav-logo-img">
     </a>
-
-    <span class="khas-nav-school">SK Hicom &nbsp;&middot;&nbsp; PPKI</span>
 
     <div class="khas-nav-spacer"></div>
 
@@ -172,7 +162,17 @@
     <strong>KHAS-Talk</strong> &mdash; Parent-Teacher Communication System for Autism
     <br>&copy; {{ date('Y') }} All rights reserved.
     <br><br>
-    Developed by <span class="khas-dev-name">Nur Ain Farhana Binti Ahmad Saifful</span>
+    Developed by <span class="khas-dev-name">KHAS-Talk Teams</span>
+    <div style="margin-top: 6px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+            <a href="mailto:ainf9335@gmail.com" style="color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s;">
+                <i class="fa-solid fa-envelope"></i>
+                ainf9335@gmail.com
+            </a>
+            <a href="tel:+601157785790" style="color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s;">
+                <i class="fa-solid fa-phone"></i>
+                +60 11-5778 5790
+            </a>
+        </div>
 </footer>
 
 @stack('scripts')

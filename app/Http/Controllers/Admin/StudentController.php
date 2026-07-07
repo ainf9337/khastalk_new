@@ -74,6 +74,23 @@ class StudentController extends Controller
             ->with('success', "Student '{$student->name}' enrolled successfully.");
     }
 
+    public function show(Student $student)
+    {
+    $student->load(['profile', 'classRoom.teacher', 'parent']);
+
+    $recentLogs = $student->behaviourLogs()
+        ->with('teacher')
+        ->latest('logged_at')
+        ->take(10)
+        ->get();
+
+    $classes = ClassRoom::orderBy('class_name')->get();
+
+    return view('admin.students.show', compact(
+        'student', 'recentLogs', 'classes'
+    ));
+    }
+
     public function destroy(Student $student)
     {
         $name = $student->name;
@@ -87,5 +104,29 @@ class StudentController extends Controller
 
         return redirect()->route('admin.students.index')
             ->with('success', "Student '{$name}' removed.");
+    }
+
+    public function changeClass(Request $request, Student $student)
+    {
+    $request->validate([
+        'class_id' => 'required|exists:classes,id',
+    ]);
+
+    $newClass  = ClassRoom::find($request->class_id);
+    $oldClass  = $student->classRoom?->class_name ?? 'none';
+
+    $student->update([
+        'class_id'   => $newClass->id,
+        'teacher_id' => $newClass->teacher_id,
+    ]);
+
+    ActivityLog::record(
+        Auth::id(),
+        'Student Class Changed',
+        "Admin moved {$student->name} from {$oldClass} to {$newClass->class_name}"
+    );
+
+    return back()->with('success',
+        "{$student->name} moved to {$newClass->class_name}.");
     }
 }

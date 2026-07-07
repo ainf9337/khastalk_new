@@ -49,6 +49,17 @@ class ClassController extends Controller
             ->with('success', "Class '{$class->class_name}' created.");
     }
 
+    public function show(ClassRoom $class)
+    {
+    $class->load(['teacher', 'students.parent', 'students.profile']);
+
+    $allClasses = ClassRoom::where('id', '!=', $class->id)
+        ->orderBy('class_name')
+        ->get();
+
+    return view('admin.classes.show', compact('class', 'allClasses'));
+    }
+
     public function destroy(ClassRoom $class)
     {
         $name = $class->class_name;

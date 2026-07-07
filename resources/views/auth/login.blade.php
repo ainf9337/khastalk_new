@@ -45,7 +45,7 @@
                    style="color:var(--khas-blue);font-size:20px"></i>
                 &nbsp;Log Masuk
             </h2>
-            <p class="khas-form-sub">Masukkan maklumat anda untuk terus</p>
+            <p class="khas-form-sub">Please fill in your details below</p>
 
             {{-- Errors --}}
             @if($errors->any())
@@ -108,12 +108,6 @@
                 {{-- Remember me --}}
                 <div style="display:flex;align-items:center;
                             justify-content:space-between;margin-bottom:18px">
-                    <label style="display:flex;align-items:center;
-                                  gap:8px;cursor:pointer;font-size:12.5px;
-                                  color:var(--khas-muted)">
-                        <input type="checkbox" name="remember">
-                        Remember me
-                    </label>
                     @if(Route::has('password.request'))
                     <a href="{{ route('password.request') }}"
                        style="font-size:12.5px;color:var(--khas-muted);

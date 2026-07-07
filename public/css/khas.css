@@ -47,7 +47,6 @@ img { max-width: 100%; }
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-/* Logo in navbar - FIXED: transparent background */
 .khas-nav-logo-wrap {
     background: transparent;
     border-radius: 8px;
@@ -637,12 +636,18 @@ tbody tr:hover { background: var(--khas-blue-light) !important; }
 
 .khas-login-logo-wrap {
     background: transparent;
-    border-radius: 14px;
-    padding: 12px 22px;
+    border-radius: 10px;
+    padding: 10px 20px;
     display: inline-block;
     margin-bottom: 18px;
 }
-.khas-login-logo-img { height: 200px; display: block; }
+.khas-login-logo-img {
+    height: 300px;
+    width: auto;
+    max-width: 100%;    
+    display: block;
+    margin: 0 auto;
+}
 
 .khas-tagline {
     font-size: 14px;

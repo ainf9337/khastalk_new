@@ -135,6 +135,10 @@ Route::middleware(['auth', 'role:parent'])
         [\App\Http\Controllers\Parent\ChildProfileController::class, 'show'])
         ->name('child.show');
 
+    Route::patch('/child/{student}/profile',
+    [\App\Http\Controllers\Parent\ChildProfileController::class, 'updateProfile'])
+    ->name('child.profile.update');
+
     Route::get('/behaviour-history',
         [\App\Http\Controllers\Parent\BehaviourHistoryController::class, 'index'])
         ->name('behaviour-history');
@@ -178,9 +182,21 @@ Route::middleware(['auth', 'role:admin'])
         \App\Http\Controllers\Admin\StudentController::class)
         ->except(['show', 'edit', 'update']);
 
+    Route::get('/students/{student}',
+        [\App\Http\Controllers\Admin\StudentController::class, 'show'])
+        ->name('students.show');
+
     Route::resource('classes',
         \App\Http\Controllers\Admin\ClassController::class)
         ->except(['show', 'edit', 'update']);
+
+    Route::get('/classes/{class}',
+        [\App\Http\Controllers\Admin\ClassController::class, 'show'])
+        ->name('classes.show');
+
+    Route::patch('/students/{student}/change-class',
+        [\App\Http\Controllers\Admin\StudentController::class, 'changeClass'])
+        ->name('students.change-class');
 
     Route::get('/activity-log',
         [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])
